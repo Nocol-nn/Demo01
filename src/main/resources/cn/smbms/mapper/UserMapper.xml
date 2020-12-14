@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.smbms.mapper.UserMapper">
+    <insert id="add" parameterType="user">
+        insert into smbms_user (id,userCode,userName,userPassword,gender,birthday,phone,address,userRole,creationDate,userPic)
+        values(null,#{userCode},#{userName},#{userPassword},#{gender},#{birthday},#{phone},#{address},#{userRole},#{creationDate},#{userPic})
+    </insert>
+    <update id="update" parameterType="user">
+        update smbms_user set userName=#{userName},gender=#{gender},birthday=#{birthday},userPic=#{userPic},
+        phone=#{phone},address=#{address},userRole=#{userRole} where id=#{id}
+    </update>
+    <update id="updatePasswordByUserCode">
+        update smbms_user set userPassword = #{newpassword} where userCode=#{userCode} ;
+    </update>
+    <delete id="delete" parameterType="int">
+        delete from smbms_user where id=#{userId}
+    </delete>
+    <select id="finUserByUsernameAndPassword" parameterType="user" resultType="cn.smbms.pojo.User">
+        select * from smbms_user where userCode=#{userCode} and userPassword=#{userPassword};
+    </select>
+
+    <resultMap id="userQueryMap" type="cn.smbms.pojo.User">
+        <id column="uid" property="id"/>
+        <result column="userCode" property="userCode"/>
+        <result column="userName" property="userName"/>
+        <result column="userPassword" property="userPassword"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="phone" property="phone"/>
+        <result column="address" property="address"/>
+        <result column="userRole" property="userRole"/>
+        <result column="createdBy" property="createdBy"/>
+        <result column="creationDate" property="creationDate"/>
+        <result column="modifyBy" property="modifyBy"/>
+        <result column="modifyDate" property="modifyDate"/>
+        <result column="age" property="age"/>
+        <result column="userPic" property="userPic"/>
+        <association property="userRoleName" column="userRole" javaType="string">
+            <!--            <id column="roleCode" property="roleCode"/>-->
+            <result column="roleName" property="roleName"/>
+            <!--            <result column="createdBy" property="createdBy"/>-->
+            <!--            <result column="creationDate" property="creationDate"/>-->
+            <!--            <result column="modifyBy" property="modifyBy"/>-->
+            <!--            <result column="modifyDate" property="modifyDate"/>-->
+        </association>
+    </resultMap>
+    <!--    &#45;&#45;         select *,su.id uid from smbms_user su left outer join smbms_role sr on su.userRole=sr.id-->
+    <select id="query" resultMap="userQueryMap">
+        select *,su.id uid from smbms_user su ,smbms_role sr where su.userRole=sr.id
+    </select>
+    <select id="getUserById" parameterType="int" resultMap="userQueryMap">
+        select *,su.id uid from smbms_user su,smbms_role sr where su.userRole=sr.id and su.id=#{userId}
+    </select>
+    <select id="exist" parameterType="string" resultType="cn.smbms.pojo.User">
+        select * from smbms_user where userCode=#{userCode}
+    </select>
+    <select id="findUserByPassword" resultType="cn.smbms.pojo.User">
+        select * from smbms_user where userPassword=#{oldPassword} and userCode=#{userCode}
+    </select>
+    <select id="search" resultMap="userQueryMap">
+        select *,su.id uid from smbms_user su ,smbms_role sr
+        <where>
+            su.userRole=sr.id
+            <if test="queryUserCodeStr != null and queryUserCodeStr.length >= 0">
+                and userCode like #{queryUserCodeStr}
+            </if>
+            <if test="queryUserNameStr != null and queryUserNameStr.length >= 0">
+                and userName like #{queryUserNameStr}
+            </if>
+            <if test="queryUserRoleId != 0 and queryUserRoleId != null">
+                and userRole = #{queryUserRoleId}
+            </if>
+        </where>
+    </select>
+</mapper>

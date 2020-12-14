@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cn.smbms.mapper.BillMapper">
+
+    <resultMap id="billMap" type="bill">
+        <id column="id" property="id"/>
+        <result column="billCode" property="billCode"/>
+        <result column="productName" property="productName"/>
+        <result column="productDesc" property="productDesc"/>
+        <result column="productUnit" property="productUnit"/>
+        <result column="productCount" property="productCount"/>
+        <result column="totalPrice" property="totalPrice"/>
+        <result column="isPayment" property="isPayment"/>
+        <result column="createdBy" property="createdBy"/>
+        <result column="creationDate" property="creationDate"/>
+        <result column="modifyBy" property="modifyBy"/>
+        <result column="modifyDate" property="modifyDate"/>
+        <result column="providerId" property="providerId"/>
+        <association property="providerName" column="providerId" javaType="string">
+            <result column="proName" property="proName"/>
+        </association>
+    </resultMap>
+    <insert id="add" parameterType="bill" useGeneratedKeys="true" keyProperty="id">
+        insert into smbms_bill (id,billCode,productName,productUnit,productCount,totalPrice,providerId,isPayment,creationDate,productDesc,createdBy)
+        values (null,#{billCode},#{productName},#{productUnit},#{productCount},#{totalPrice},#{providerId},#{isPayment},#{creationDate},#{productDesc},#{createdBy});
+    </insert>
+    <update id="modify" parameterType="bill">
+        update smbms_bill set billCode=#{billCode},productName=#{productName},productUnit=#{productUnit},
+        productCount=#{productCount},totalPrice=#{totalPrice},providerId=#{providerId},isPayment=#{isPayment}
+        where id=#{id}
+    </update>
+
+    <update id="updateBillCodeById" parameterType="bill">
+        update smbms_bill set billCode=#{billCode} where id=#{id}
+    </update>
+    <delete id="delete" parameterType="int">
+        delete from smbms_bill where id=#{billId}
+    </delete>
+    <select id="query" resultMap="billMap">
+        select * from smbms_bill sb,smbms_provider sp where sb.providerId = sp.id
+    </select>
+    <select id="view" parameterType="int" resultMap="billMap">
+        select * from smbms_bill sb,smbms_provider sp where sb.providerId = sp.id and sb.id=#{billId}
+    </select>
+    <select id="search" resultMap="billMap">
+        select * from smbms_bill sb left outer join smbms_provider sp on sb.providerId = sp.id
+        <where>
+
+            <if test="queryProductName != null and queryProductName.length > 0">
+                and sb.productName like #{queryProductName}
+            </if>
+            <if test="queryProvideName != null and queryProvideName.length > 0">
+                and sp.proName = #{queryProvideName}
+            </if>
+            <if test="queryIsPayment != 0 and queryIsPayment != null">
+                and sb.isPayment = #{queryIsPayment}
+            </if>
+        </where>
+    </select>
+    <select id="likeBill" parameterType="string" resultType="String">
+        select productName from smbms_bill where productName like #{queryProductName}
+    </select>
+</mapper>
